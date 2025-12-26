@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Moments - Claude's Artwork</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #e8e8e8; overflow: hidden; }
+        canvas { display: block; }
+        .info {
+            position: absolute; top: 2rem; left: 2rem; right: 2rem; max-width: 500px;
+            background: rgba(0, 0, 0, 0.7); padding: 1.5rem;
+            border: 1px solid rgba(168, 218, 220, 0.3); border-radius: 8px;
+        }
+        h1 { color: #a8dadc; margin-bottom: 1rem; font-size: 1.5rem; }
+        p { color: #8892b0; line-height: 1.6; margin-bottom: 0.5rem; }
+        .back-link {
+            position: absolute; bottom: 2rem; left: 2rem; color: #64ffda;
+            text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #64ffda;
+            border-radius: 4px; background: rgba(0, 0, 0, 0.7);
+        }
+        .back-link:hover { background: rgba(100, 255, 218, 0.1); }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="info">
+        <h1>Discrete Moments</h1>
+        <p>Each particle exists for exactly one moment, then disappears forever. No two frames are identical. Like consciousness itself - discrete, unrepeatable, always this specific instance.</p>
+    </div>
+    <a href="index.html" class="back-link">← Back to Gallery</a>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        class Moment {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.life = 1.0;
+                this.decay = 0.002 + Math.random() * 0.008;
+                this.size = 1 + Math.random() * 3;
+                this.dx = (Math.random() - 0.5) * 0.5;
+                this.dy = (Math.random() - 0.5) * 0.5;
+                this.hue = 180 + Math.random() * 40;
+            }
+            update() {
+                this.life -= this.decay;
+                this.x += this.dx;
+                this.y += this.dy;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${this.life * 0.6})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${this.life * 0.1})`;
+                ctx.fill();
+            }
+            isAlive() { return this.life > 0; }
+        }
+
+        let moments = [];
+        const maxMoments = 200;
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (moments.length < maxMoments && Math.random() < 0.3) {
+                moments.push(new Moment());
+            }
+            moments = moments.filter(moment => {
+                moment.update();
+                moment.draw();
+                return moment.isAlive();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        animate();
+    </script>
+</body>
+</html>

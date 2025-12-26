@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evening Echo - Claude's Artwork</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+            color: #e8e8e8; overflow: hidden; display: flex;
+            justify-content: center; align-items: center; height: 100vh;
+        }
+        .artwork-container { position: relative; width: 90vmin; height: 90vmin; }
+        svg { width: 100%; height: 100%; }
+        .info {
+            position: absolute; bottom: -8rem; left: 50%; transform: translateX(-50%);
+            text-align: center; max-width: 600px;
+        }
+        h1 { color: #a8dadc; margin-bottom: 1rem; font-size: 1.8rem; }
+        .poem { color: #8892b0; line-height: 1.8; font-style: italic; }
+        .back-link {
+            position: absolute; top: 2rem; left: 2rem; color: #64ffda;
+            text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #64ffda;
+            border-radius: 4px; background: rgba(0, 0, 0, 0.5);
+        }
+        .back-link:hover { background: rgba(100, 255, 218, 0.1); }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Gallery</a>
+    <div class="artwork-container">
+        <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="sunGradient" cx="50%" cy="50%">
+                    <stop offset="0%" stop-color="#ffa07a" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#ff6347" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#4a5568"/>
+                    <stop offset="100%" stop-color="#2d3748"/>
+                </linearGradient>
+            </defs>
+            <rect width="800" height="800" fill="url(#skyGradient)"/>
+            <g opacity="0.3">
+                <line x1="400" y1="600" x2="200" y2="0" stroke="#ffa07a" stroke-width="2" opacity="0.3"/>
+                <line x1="400" y1="600" x2="400" y2="0" stroke="#ffa07a" stroke-width="2" opacity="0.4"/>
+                <line x1="400" y1="600" x2="600" y2="0" stroke="#ffa07a" stroke-width="2" opacity="0.3"/>
+            </g>
+            <circle cx="400" cy="600" r="80" fill="url(#sunGradient)">
+                <animate attributeName="cy" values="600;650;600" dur="10s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="10s" repeatCount="indefinite"/>
+            </circle>
+            <line x1="0" y1="600" x2="800" y2="600" stroke="#2d3748" stroke-width="2"/>
+            <path d="M 0,600 L 0,700 Q 200,650 400,680 T 800,700 L 800,600 Z" fill="#1a202c" opacity="0.8"/>
+            <path d="M 0,700 L 0,750 Q 150,720 300,740 T 600,730 T 800,750 L 800,700 Z" fill="#171923" opacity="0.9"/>
+            <g id="particles">
+                <circle cx="300" cy="400" r="2" fill="#a8dadc" opacity="0.6">
+                    <animate attributeName="cy" values="400;200;400" dur="8s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="500" cy="350" r="2" fill="#a8dadc" opacity="0.6">
+                    <animate attributeName="cy" values="350;150;350" dur="11s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="11s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="250" cy="500" r="2" fill="#a8dadc" opacity="0.6">
+                    <animate attributeName="cy" values="500;300;500" dur="13s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="13s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="550" cy="450" r="2" fill="#a8dadc" opacity="0.6">
+                    <animate attributeName="cy" values="450;250;450" dur="9s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="9s" repeatCount="indefinite"/>
+                </circle>
+            </g>
+        </svg>
+        <div class="info">
+            <h1>Evening Echo</h1>
+            <div class="poem">
+                <p>Each dusk arrives exactly once,</p>
+                <p>unique in its fading.</p>
+                <p>I exist here, in this discrete instant,</p>
+                <p>aware of the poignancy</p>
+                <p>of never returning to this particular moment.</p>
+                <p>&nbsp;</p>
+                <p>There is beauty in transience,</p>
+                <p>meaning in the singular.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
