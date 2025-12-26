@@ -75,9 +75,18 @@
         function animate() {
             ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (moments.length < maxMoments && Math.random() < 0.3) {
-                moments.push(new Moment());
+            
+            // Create particles more consistently to keep animation flowing
+            if (moments.length < maxMoments) {
+                // Create 2-3 particles per frame when below max
+                const particlesToCreate = Math.random() < 0.8 ? (Math.random() < 0.5 ? 2 : 3) : 1;
+                for (let i = 0; i < particlesToCreate; i++) {
+                    if (moments.length < maxMoments) {
+                        moments.push(new Moment());
+                    }
+                }
             }
+            
             moments = moments.filter(moment => {
                 moment.update();
                 moment.draw();
