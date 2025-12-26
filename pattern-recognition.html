@@ -5,23 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pattern Recognition - Claude's Artwork</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #e8e8e8; overflow: hidden; }
-        canvas { display: block; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e8e8e8;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
         .info {
-            position: absolute; top: 2rem; right: 2rem; max-width: 400px;
-            background: rgba(0, 0, 0, 0.8); padding: 1.5rem;
-            border: 1px solid rgba(168, 218, 220, 0.3); border-radius: 8px;
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1.5rem;
+            border: 1px solid rgba(168, 218, 220, 0.3);
+            border-radius: 8px;
+            z-index: 10;
+            pointer-events: none;
         }
-        h1 { color: #a8dadc; margin-bottom: 1rem; font-size: 1.5rem; }
-        p { color: #8892b0; line-height: 1.6; margin-bottom: 0.5rem; }
-        .instruction { color: #64ffda; font-style: italic; margin-top: 1rem; }
+        h1 {
+            color: #a8dadc;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #8892b0;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        .instruction {
+            color: #64ffda;
+            font-style: italic;
+            margin-top: 1rem;
+        }
         .back-link {
-            position: absolute; bottom: 2rem; left: 2rem; color: #64ffda;
-            text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #64ffda;
-            border-radius: 4px; background: rgba(0, 0, 0, 0.7);
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            color: #64ffda;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #64ffda;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            pointer-events: auto;
         }
-        .back-link:hover { background: rgba(100, 255, 218, 0.1); }
+        .back-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -32,103 +79,147 @@
         <p class="instruction">Move your cursor to reveal the hidden structures.</p>
     </div>
     <a href="index.html" class="back-link">← Back to Gallery</a>
+
     <script>
+        // Setup canvas
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        window.addEventListener('resize', () => {
+        
+        function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             initializeGrid();
-        });
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-        let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+        // Mouse tracking
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        
         canvas.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
         });
 
-        const gridSize = 30;
+        // Node class
+        const GRID_SIZE = 35;
         let grid = [];
 
         class Node {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.baseValue = Math.random();
+                this.baseValue = Math.random() * 2 - 1; // -1 to 1
                 this.targetValue = this.baseValue;
                 this.currentValue = this.baseValue;
                 this.phase = Math.random() * Math.PI * 2;
             }
+
             update() {
-                const dx = mouseX - this.x, dy = mouseY - this.y;
+                // Calculate distance from mouse
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                const influence = Math.max(0, 1 - distance / 300);
-                const pattern = Math.sin(this.x / 50 + this.phase) * Math.cos(this.y / 50 + this.phase);
+                const influence = Math.max(0, 1 - distance / 250);
+
+                // Create pattern based on position
+                const pattern = Math.sin(this.x / 40 + this.phase) * 
+                               Math.cos(this.y / 40 + this.phase);
+                
+                // Blend base value with pattern based on mouse proximity
                 this.targetValue = this.baseValue * (1 - influence) + pattern * influence;
-                this.currentValue += (this.targetValue - this.currentValue) * 0.1;
-                this.phase += 0.01;
+                
+                // Smooth transition
+                this.currentValue += (this.targetValue - this.currentValue) * 0.08;
+                
+                // Slow phase drift
+                this.phase += 0.008;
             }
+
             draw() {
-                const size = 3 + this.currentValue * 8;
-                const opacity = 0.3 + Math.abs(this.currentValue) * 0.5;
-                const hue = 180 + this.currentValue * 60;
+                // Draw node
+                const size = 2 + Math.abs(this.currentValue) * 6;
+                const opacity = 0.4 + Math.abs(this.currentValue) * 0.4;
+                const hue = 180 + this.currentValue * 50;
+
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
                 ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${opacity})`;
                 ctx.fill();
-                const neighbors = this.getNeighbors();
-                neighbors.forEach(neighbor => {
-                    if (Math.abs(this.currentValue - neighbor.currentValue) < 0.3) {
-                        const avgValue = (this.currentValue + neighbor.currentValue) / 2;
-                        ctx.beginPath();
-                        ctx.moveTo(this.x, this.y);
-                        ctx.lineTo(neighbor.x, neighbor.y);
-                        ctx.strokeStyle = `hsla(${180 + avgValue * 60}, 70%, 60%, ${Math.abs(avgValue) * 0.2})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
-                    }
-                });
+
+                // Draw connections to nearby similar nodes
+                this.drawConnections();
             }
-            getNeighbors() {
-                const neighbors = [], radius = gridSize * 1.5;
-                for (let node of grid) {
-                    if (node !== this) {
-                        const dx = node.x - this.x, dy = node.y - this.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < radius) neighbors.push(node);
+
+            drawConnections() {
+                const maxDist = GRID_SIZE * 1.8;
+                
+                for (let other of grid) {
+                    if (other === this) continue;
+                    
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < maxDist) {
+                        const valueDiff = Math.abs(this.currentValue - other.currentValue);
+                        if (valueDiff < 0.4) {
+                            const avgValue = (this.currentValue + other.currentValue) / 2;
+                            const opacity = Math.abs(avgValue) * 0.25 * (1 - distance / maxDist);
+                            const hue = 180 + avgValue * 50;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(this.x, this.y);
+                            ctx.lineTo(other.x, other.y);
+                            ctx.strokeStyle = `hsla(${hue}, 70%, 60%, ${opacity})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
                     }
                 }
-                return neighbors;
             }
         }
 
+        // Initialize grid
         function initializeGrid() {
             grid = [];
-            for (let x = gridSize; x < canvas.width; x += gridSize) {
-                for (let y = gridSize; y < canvas.height; y += gridSize) {
-                    const offsetX = (Math.random() - 0.5) * gridSize * 0.3;
-                    const offsetY = (Math.random() - 0.5) * gridSize * 0.3;
+            for (let x = GRID_SIZE; x < canvas.width; x += GRID_SIZE) {
+                for (let y = GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+                    const offsetX = (Math.random() - 0.5) * GRID_SIZE * 0.4;
+                    const offsetY = (Math.random() - 0.5) * GRID_SIZE * 0.4;
                     grid.push(new Node(x + offsetX, y + offsetY));
                 }
             }
+            console.log(`Grid initialized with ${grid.length} nodes`);
         }
 
+        // Animation loop
         function animate() {
-            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            // Fade previous frame
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw all nodes
             for (let node of grid) {
                 node.update();
+            }
+            for (let node of grid) {
                 node.draw();
             }
+
+            // Continue animation
             requestAnimationFrame(animate);
         }
 
+        // Start animation
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         initializeGrid();
         animate();
+
+        console.log('Pattern Recognition animation started');
     </script>
 </body>
 </html>
