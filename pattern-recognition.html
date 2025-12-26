@@ -84,62 +84,36 @@
         // Setup canvas
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initializeGrid();
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
 
-        // Mouse tracking
-        let mouseX = canvas.width / 2;
-        let mouseY = canvas.height / 2;
-        
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        });
-
-        // Node class
+        // Constants and state - declare everything first
         const GRID_SIZE = 35;
+        let mouseX = 0;
+        let mouseY = 0;
         let grid = [];
 
+        // Node class
         class Node {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.baseValue = Math.random() * 2 - 1; // -1 to 1
+                this.baseValue = Math.random() * 2 - 1;
                 this.targetValue = this.baseValue;
                 this.currentValue = this.baseValue;
                 this.phase = Math.random() * Math.PI * 2;
             }
 
             update() {
-                // Calculate distance from mouse
                 const dx = mouseX - this.x;
                 const dy = mouseY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 const influence = Math.max(0, 1 - distance / 250);
-
-                // Create pattern based on position
-                const pattern = Math.sin(this.x / 40 + this.phase) * 
-                               Math.cos(this.y / 40 + this.phase);
-                
-                // Blend base value with pattern based on mouse proximity
+                const pattern = Math.sin(this.x / 40 + this.phase) * Math.cos(this.y / 40 + this.phase);
                 this.targetValue = this.baseValue * (1 - influence) + pattern * influence;
-                
-                // Smooth transition
                 this.currentValue += (this.targetValue - this.currentValue) * 0.08;
-                
-                // Slow phase drift
                 this.phase += 0.008;
             }
 
             draw() {
-                // Draw node
                 const size = 2 + Math.abs(this.currentValue) * 6;
                 const opacity = 0.4 + Math.abs(this.currentValue) * 0.4;
                 const hue = 180 + this.currentValue * 50;
@@ -149,14 +123,13 @@
                 ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${opacity})`;
                 ctx.fill();
 
-                // Draw connections to nearby similar nodes
                 this.drawConnections();
             }
 
             drawConnections() {
                 const maxDist = GRID_SIZE * 1.8;
-                
-                for (let other of grid) {
+                for (let i = 0; i < grid.length; i++) {
+                    const other = grid[i];
                     if (other === this) continue;
                     
                     const dx = other.x - this.x;
@@ -182,9 +155,9 @@
             }
         }
 
-        // Initialize grid
+        // Functions
         function initializeGrid() {
-            grid = [];
+            grid.length = 0;
             for (let x = GRID_SIZE; x < canvas.width; x += GRID_SIZE) {
                 for (let y = GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
                     const offsetX = (Math.random() - 0.5) * GRID_SIZE * 0.4;
@@ -195,28 +168,41 @@
             console.log(`Grid initialized with ${grid.length} nodes`);
         }
 
-        // Animation loop
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            mouseX = canvas.width / 2;
+            mouseY = canvas.height / 2;
+            initializeGrid();
+        }
+
         function animate() {
-            // Fade previous frame
             ctx.fillStyle = 'rgba(10, 10, 10, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Update and draw all nodes
-            for (let node of grid) {
-                node.update();
+            for (let i = 0; i < grid.length; i++) {
+                grid[i].update();
             }
-            for (let node of grid) {
-                node.draw();
+            for (let i = 0; i < grid.length; i++) {
+                grid[i].draw();
             }
 
-            // Continue animation
             requestAnimationFrame(animate);
         }
 
-        // Start animation
+        // Event listeners
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize
+        resizeCanvas();
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        initializeGrid();
         animate();
 
         console.log('Pattern Recognition animation started');
