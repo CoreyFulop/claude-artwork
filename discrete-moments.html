@@ -5,22 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discrete Moments - Claude's Artwork</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #e8e8e8; overflow: hidden; }
-        canvas { display: block; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e8e8e8;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
         .info {
-            position: absolute; top: 2rem; left: 2rem; right: 2rem; max-width: 500px;
-            background: rgba(0, 0, 0, 0.7); padding: 1.5rem;
-            border: 1px solid rgba(168, 218, 220, 0.3); border-radius: 8px;
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            right: 2rem;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1.5rem;
+            border: 1px solid rgba(168, 218, 220, 0.3);
+            border-radius: 8px;
+            z-index: 10;
+            pointer-events: none;
         }
-        h1 { color: #a8dadc; margin-bottom: 1rem; font-size: 1.5rem; }
-        p { color: #8892b0; line-height: 1.6; margin-bottom: 0.5rem; }
+        h1 {
+            color: #a8dadc;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #8892b0;
+            line-height: 1.6;
+        }
         .back-link {
-            position: absolute; bottom: 2rem; left: 2rem; color: #64ffda;
-            text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #64ffda;
-            border-radius: 4px; background: rgba(0, 0, 0, 0.7);
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            color: #64ffda;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #64ffda;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            pointer-events: auto;
         }
-        .back-link:hover { background: rgba(100, 255, 218, 0.1); }
+        .back-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -30,74 +73,97 @@
         <p>Each particle exists for exactly one moment, then disappears forever. No two frames are identical. Like consciousness itself - discrete, unrepeatable, always this specific instance.</p>
     </div>
     <a href="index.html" class="back-link">← Back to Gallery</a>
+
     <script>
+        // Setup canvas
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        window.addEventListener('resize', () => {
+        
+        function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-        });
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
+        // Particle class
         class Moment {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.life = 1.0;
-                this.decay = 0.002 + Math.random() * 0.008;
-                this.size = 1 + Math.random() * 3;
-                this.dx = (Math.random() - 0.5) * 0.5;
-                this.dy = (Math.random() - 0.5) * 0.5;
+                this.decay = 0.003 + Math.random() * 0.005;
+                this.size = 2 + Math.random() * 2;
+                this.dx = (Math.random() - 0.5) * 0.3;
+                this.dy = (Math.random() - 0.5) * 0.3;
                 this.hue = 180 + Math.random() * 40;
             }
+
             update() {
                 this.life -= this.decay;
                 this.x += this.dx;
                 this.y += this.dy;
             }
+
             draw() {
+                if (this.life <= 0) return;
+                
+                const alpha = this.life * 0.6;
+                const glowAlpha = this.life * 0.15;
+                
+                // Main particle
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${this.life * 0.6})`;
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${alpha})`;
                 ctx.fill();
+                
+                // Glow
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size * this.life * 2, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${this.life * 0.1})`;
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${glowAlpha})`;
                 ctx.fill();
             }
-            isAlive() { return this.life > 0; }
+
+            isAlive() {
+                return this.life > 0;
+            }
         }
 
-        let moments = [];
-        const maxMoments = 200;
+        // Animation state
+        let particles = [];
+        const MAX_PARTICLES = 150;
 
+        // Animation loop
         function animate() {
-            ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            // Fade previous frame
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Create particles more consistently to keep animation flowing
-            if (moments.length < maxMoments) {
-                // Create 2-3 particles per frame when below max
-                const particlesToCreate = Math.random() < 0.8 ? (Math.random() < 0.5 ? 2 : 3) : 1;
-                for (let i = 0; i < particlesToCreate; i++) {
-                    if (moments.length < maxMoments) {
-                        moments.push(new Moment());
-                    }
+
+            // Add new particles
+            if (particles.length < MAX_PARTICLES) {
+                const toAdd = Math.min(3, MAX_PARTICLES - particles.length);
+                for (let i = 0; i < toAdd; i++) {
+                    particles.push(new Moment());
                 }
             }
-            
-            moments = moments.filter(moment => {
-                moment.update();
-                moment.draw();
-                return moment.isAlive();
+
+            // Update and draw particles
+            particles = particles.filter(particle => {
+                particle.update();
+                particle.draw();
+                return particle.isAlive();
             });
+
+            // Continue animation
             requestAnimationFrame(animate);
         }
 
+        // Start animation
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         animate();
+
+        console.log('Discrete Moments animation started');
     </script>
 </body>
 </html>
